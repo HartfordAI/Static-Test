@@ -3,9 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-AI Chat Interface</title>
+    <title>Advanced AI Chat Interface</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
+        :root {
+            --primary: #4e54c8;
+            --primary-light: #8f94fb;
+            --dark: #1a1a2e;
+            --darker: #16213e;
+            --light: #f0f0f0;
+            --gray: #a0a0d0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,8 +26,8 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: var(--light);
             min-height: 100vh;
             padding: 20px;
         }
@@ -36,15 +48,16 @@
         h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
-            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
         
         .subtitle {
-            color: #a0a0d0;
+            color: var(--gray);
             font-size: 1.2rem;
+            margin-bottom: 20px;
         }
         
         .main-content {
@@ -60,11 +73,30 @@
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .ai-selector h2 {
+            margin-bottom: 15px;
+            color: var(--primary-light);
+            border-bottom: 1px solid var(--gray);
+            padding-bottom: 10px;
+        }
+        
+        .model-category {
+            margin-bottom: 20px;
+        }
+        
+        .model-category h3 {
+            color: var(--primary-light);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
         }
         
         .ai-option {
-            padding: 15px;
-            margin: 10px 0;
+            padding: 12px;
+            margin: 8px 0;
             background: rgba(50, 50, 80, 0.6);
             border-radius: 10px;
             cursor: pointer;
@@ -78,18 +110,18 @@
         }
         
         .ai-option.active {
-            border-color: #8f94fb;
+            border-color: var(--primary-light);
             background: rgba(70, 70, 120, 0.8);
         }
         
-        .ai-option h3 {
-            color: #8f94fb;
+        .ai-option h4 {
+            color: var(--primary-light);
             margin-bottom: 5px;
         }
         
         .ai-option p {
-            color: #b0b0d0;
-            font-size: 0.9rem;
+            color: var(--gray);
+            font-size: 0.85rem;
         }
         
         .chat-container {
@@ -114,7 +146,7 @@
         .model-icon {
             width: 30px;
             height: 30px;
-            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -140,7 +172,7 @@
         
         .user-message {
             align-self: flex-end;
-            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             color: white;
             border-bottom-right-radius: 5px;
         }
@@ -148,7 +180,7 @@
         .ai-message {
             align-self: flex-start;
             background: rgba(60, 60, 90, 0.8);
-            color: #f0f0f0;
+            color: var(--light);
             border-bottom-left-radius: 5px;
         }
         
@@ -170,14 +202,14 @@
         }
         
         input:focus {
-            outline: 2px solid #8f94fb;
+            outline: 2px solid var(--primary-light);
         }
         
         button {
             padding: 12px 25px;
             border: none;
             border-radius: 20px;
-            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             color: white;
             font-weight: bold;
             cursor: pointer;
@@ -192,7 +224,7 @@
         .typing-indicator {
             display: none;
             padding: 10px;
-            color: #a0a0d0;
+            color: var(--gray);
             font-style: italic;
         }
         
@@ -200,10 +232,16 @@
             display: block;
         }
         
+        .model-info {
+            margin-left: auto;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
         footer {
             text-align: center;
             padding: 20px;
-            color: #a0a0d0;
+            color: var(--gray);
             font-size: 0.9rem;
         }
         
@@ -215,51 +253,120 @@
             .message {
                 max-width: 90%;
             }
+            
+            .ai-selector {
+                max-height: 300px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Multi-AI Chat Interface</h1>
+            <h1>Advanced AI Chat Interface</h1>
             <p class="subtitle">Chat with different AI models powered by Puter.js</p>
         </header>
         
         <div class="main-content">
             <div class="ai-selector">
                 <h2>Select AI Model</h2>
-                <div class="ai-option active" data-model="deepseek-v3.1">
-                    <h3>Deepseek v3.1</h3>
-                    <p>Advanced model specialized in coding and complex reasoning</p>
+                
+                <div class="model-category">
+                    <h3>GPT-5 Series</h3>
+                    <div class="ai-option active" data-model="gpt-5">
+                        <h4>GPT-5</h4>
+                        <p>Most advanced general-purpose model</p>
+                    </div>
+                    <div class="ai-option" data-model="gpt-5-mini">
+                        <h4>GPT-5 Mini</h4>
+                        <p>Smaller, faster version of GPT-5</p>
+                    </div>
+                    <div class="ai-option" data-model="gpt-5-nano">
+                        <h4>GPT-5 Nano</h4>
+                        <p>Lightweight version for quick responses</p>
+                    </div>
+                    <div class="ai-option" data-model="gpt-5-chat-latest">
+                        <h4>GPT-5 Chat Latest</h4>
+                        <p>Latest chat-optimized version</p>
+                    </div>
                 </div>
-                <div class="ai-option" data-model="chatgpt-5">
-                    <h3>ChatGPT 5</h3>
-                    <p>OpenAI's most advanced model with broad knowledge</p>
+                
+                <div class="model-category">
+                    <h3>GPT-4.1 Series</h3>
+                    <div class="ai-option" data-model="gpt-4.1">
+                        <h4>GPT-4.1</h4>
+                        <p>Advanced model with improved reasoning</p>
+                    </div>
+                    <div class="ai-option" data-model="gpt-4.1-mini">
+                        <h4>GPT-4.1 Mini</h4>
+                        <p>Compact version of GPT-4.1</p>
+                    </div>
+                    <div class="ai-option" data-model="gpt-4.1-nano">
+                        <h4>GPT-4.1 Nano</h4>
+                        <p>Smallest version of GPT-4.1</p>
+                    </div>
                 </div>
-                <div class="ai-option" data-model="claude-3">
-                    <h3>Claude 3</h3>
-                    <p>Anthropic's model focused on helpful and honest dialogue</p>
+                
+                <div class="model-category">
+                    <h3>GPT-4.5 & GPT-4o</h3>
+                    <div class="ai-option" data-model="gpt-4.5-preview">
+                        <h4>GPT-4.5 Preview</h4>
+                        <p>Preview of the next generation model</p>
+                    </div>
+                    <div class="ai-option" data-model="gpt-4o">
+                        <h4>GPT-4o</h4>
+                        <p>Omni-model with multi-modal capabilities</p>
+                    </div>
+                    <div class="ai-option" data-model="gpt-4o-mini">
+                        <h4>GPT-4o Mini</h4>
+                        <p>Compact version of GPT-4o</p>
+                    </div>
                 </div>
-                <div class="ai-option" data-model="llama-3">
-                    <h3>Llama 3</h3>
-                    <p>Meta's open-source model with strong performance</p>
+                
+                <div class="model-category">
+                    <h3>O-Series Models</h3>
+                    <div class="ai-option" data-model="o1">
+                        <h4>O1</h4>
+                        <p>First in the O-series models</p>
+                    </div>
+                    <div class="ai-option" data-model="o1-mini">
+                        <h4>O1 Mini</h4>
+                        <p>Smaller version of O1</p>
+                    </div>
+                    <div class="ai-option" data-model="o1-pro">
+                        <h4>O1 Pro</h4>
+                        <p>Professional version of O1</p>
+                    </div>
+                    <div class="ai-option" data-model="o3">
+                        <h4>O3</h4>
+                        <p>Third generation O-series model</p>
+                    </div>
+                    <div class="ai-option" data-model="o3-mini">
+                        <h4>O3 Mini</h4>
+                        <p>Compact version of O3</p>
+                    </div>
+                    <div class="ai-option" data-model="o4-mini">
+                        <h4>O4 Mini</h4>
+                        <p>Compact version of O4</p>
+                    </div>
                 </div>
             </div>
             
             <div class="chat-container">
                 <div class="chat-header">
                     <div class="model-icon">AI</div>
-                    <h3>Deepseek v3.1</h3>
+                    <h3>GPT-5</h3>
+                    <div class="model-info">Most advanced model</div>
                 </div>
                 
                 <div class="chat-messages">
                     <div class="message ai-message">
-                        Hello! I'm Deepseek v3.1. How can I assist you today?
+                        Hello! I'm GPT-5, an advanced AI assistant. How can I help you today?
                     </div>
                 </div>
                 
                 <div class="typing-indicator" id="typing-indicator">
-                    AI is typing...
+                    AI is thinking...
                 </div>
                 
                 <div class="chat-input">
@@ -270,7 +377,7 @@
         </div>
         
         <footer>
-            <p>Powered by Puter.js | This is a demonstration interface</p>
+            <p>Powered by Puter.js | V1.3 | For The Hartford School District</p>
         </footer>
     </div>
 
@@ -279,51 +386,33 @@
             // DOM elements
             const aiOptions = document.querySelectorAll('.ai-option');
             const chatHeader = document.querySelector('.chat-header h3');
+            const modelInfo = document.querySelector('.model-info');
             const chatMessages = document.querySelector('.chat-messages');
             const userInput = document.getElementById('user-input');
             const sendButton = document.getElementById('send-button');
             const typingIndicator = document.getElementById('typing-indicator');
             
             // Current selected model
-            let currentModel = 'deepseek-v3.1';
+            let currentModel = 'gpt-5';
             
-            // Initialize Puter.js
-            // Note: This is a mock implementation as actual API integration would require proper authentication
-            const puter = {
-                ai: {
-                    chat: async (model, message) => {
-                        // Simulate API call delay
-                        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-                        
-                        // Mock responses based on model
-                        const responses = {
-                            'deepseek-v3.1': [
-                                "As Deepseek v3.1, I'm designed to assist with complex problem solving, especially in coding and technical domains.",
-                                "I can help analyze code, suggest optimizations, and explain complex algorithms in detail.",
-                                "My training data includes a wide range of technical literature and programming resources."
-                            ],
-                            'chatgpt-5': [
-                                "As ChatGPT-5, I can help with a wide variety of topics from creative writing to technical explanations.",
-                                "I'm designed to be helpful, harmless, and honest in all my interactions.",
-                                "My knowledge spans numerous domains up until my training cutoff date."
-                            ],
-                            'claude-3': [
-                                "As Claude 3, I strive to be helpful, honest, and harmless in our conversation.",
-                                "I can assist with analysis, writing, math, and more while being transparent about my capabilities.",
-                                "I'm designed to avoid harmful outputs and to be straightforward about what I can and cannot do."
-                            ],
-                            'llama-3': [
-                                "As Llama 3, I'm an open-source model that can help with various tasks including coding and general knowledge.",
-                                "I aim to provide helpful and accurate responses to your queries.",
-                                "Being open-source means my architecture and weights are available to the research community."
-                            ]
-                        };
-                        
-                        // Return a random response for the selected model
-                        const modelResponses = responses[model] || ["I'm not sure how to respond to that."];
-                        return modelResponses[Math.floor(Math.random() * modelResponses.length)];
-                    }
-                }
+            // Model descriptions for info panel
+            const modelDescriptions = {
+                'gpt-5': 'Most advanced general-purpose model',
+                'gpt-5-mini': 'Smaller, faster version of GPT-5',
+                'gpt-5-nano': 'Lightweight version for quick responses',
+                'gpt-5-chat-latest': 'Latest chat-optimized version',
+                'gpt-4.1': 'Advanced model with improved reasoning',
+                'gpt-4.1-mini': 'Compact version of GPT-4.1',
+                'gpt-4.1-nano': 'Smallest version of GPT-4.1',
+                'gpt-4.5-preview': 'Preview of the next generation model',
+                'gpt-4o': 'Omni-model with multi-modal capabilities',
+                'gpt-4o-mini': 'Compact version of GPT-4o',
+                'o1': 'First in the O-series models',
+                'o1-mini': 'Smaller version of O1',
+                'o1-pro': 'Professional version of O1',
+                'o3': 'Third generation O-series model',
+                'o3-mini': 'Compact version of O3',
+                'o4-mini': 'Compact version of O4'
             };
             
             // Switch AI model
@@ -337,10 +426,13 @@
                     currentModel = this.getAttribute('data-model');
                     
                     // Update chat header
-                    chatHeader.textContent = this.querySelector('h3').textContent;
+                    chatHeader.textContent = this.querySelector('h4').textContent;
+                    
+                    // Update model info
+                    modelInfo.textContent = modelDescriptions[currentModel] || 'AI model';
                     
                     // Add a system message
-                    addMessage(`Switched to ${this.querySelector('h3').textContent}. How can I help you?`, 'ai');
+                    addMessage(`Switched to ${this.querySelector('h4').textContent}. How can I help you?`, 'ai');
                 });
             });
             
@@ -371,8 +463,8 @@
                     // Show typing indicator
                     typingIndicator.classList.add('active');
                     
-                    // Get AI response
-                    puter.ai.chat(currentModel, message)
+                    // Use the actual Puter.js API
+                    puter.ai.chat(message, { model: currentModel })
                         .then(response => {
                             // Hide typing indicator
                             typingIndicator.classList.remove('active');
@@ -385,8 +477,8 @@
                             typingIndicator.classList.remove('active');
                             
                             // Show error message
-                            addMessage("Sorry, I encountered an error processing your request.", 'ai');
-                            console.error("Error:", error);
+                            addMessage("Sorry, I encountered an error processing your request. Please check if you have access to the Puter.js API.", 'ai');
+                            console.error("Puter.js API Error:", error);
                         });
                 }
             }
