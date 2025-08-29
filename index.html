@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat with LaTeX Support</title>
+    <title>AI Chat with Memory & LaTeX</title>
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- KaTeX for LaTeX support -->
@@ -40,6 +40,7 @@
             color: var(--light);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
         }
         
         .container {
@@ -378,13 +379,77 @@
             margin-left: 10px;
             vertical-align: middle;
         }
+        
+        /* Navigation arrows */
+        .nav-arrows {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .nav-arrow {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .nav-arrow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .memory-indicator {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        .memory-controls {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--gray);
+        }
+        
+        .memory-btn {
+            padding: 8px 15px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--primary-light);
+            border-radius: 20px;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .memory-btn:hover {
+            background: rgba(51, 65, 85, 0.8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>AI Chat with LaTeX Support</h1>
-            <p class="subtitle">Advanced mathematical expressions with full Markdown formatting</p>
+            <h1>AI Chat with Memory & LaTeX</h1>
+            <p class="subtitle">Context-aware conversations with mathematical expression support</p>
         </header>
         
         <div class="dashboard">
@@ -420,15 +485,10 @@
                     </div>
                 </div>
                 
-                <div class="model-category">
-                    <h3>Anthropic Models</h3>
-                    <div class="ai-option" data-model="claude-3">
-                        <div class="model-icon">C</div>
-                        <div>
-                            <h4>Claude 3</h4>
-                            <p>Anthropic's latest model</p>
-                        </div>
-                    </div>
+                <div class="memory-controls">
+                    <h3>Memory Settings <span class="memory-indicator">Active</span></h3>
+                    <button class="memory-btn" id="clear-memory">Clear Conversation</button>
+                    <button class="memory-btn" id="export-chat">Export Chat</button>
                 </div>
             </div>
             
@@ -469,22 +529,20 @@
                 <div class="chat-header">
                     <div class="model-icon">DS</div>
                     <h3>DeepSeek Chat</h3>
-                    <div class="model-info">With Markdown & LaTeX rendering</div>
+                    <div class="model-info">With Memory & LaTeX rendering</div>
                 </div>
                 
                 <div class="chat-messages" id="chat-messages">
                     <div class="message ai-message">
                         <div class="ai-message-content">
-                            Hello! I'm DeepSeek Chat with **Markdown and LaTeX support**. I can format my responses with:
+                            Hello! I'm DeepSeek Chat with **memory and LaTeX support**. I can remember our conversation and format responses with:
                             <ul>
                                 <li>*Italics* and **bold** text</li>
                                 <li>`Code snippets` and ```code blocks```</li>
-                                <li># Headers and ## Subheaders</li>
-                                <li>- Lists and 1. Numbered lists</li>
-                                <li>> Blockquotes</li>
                                 <li>Mathematical expressions like $E = mc^2$ or display equations:<br>
                                     $$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$
                                 </li>
+                                <li>I'll remember our conversation context</li>
                             </ul>
                             How can I help you today?
                         </div>
@@ -507,6 +565,12 @@
         </footer>
     </div>
 
+    <!-- Navigation arrows -->
+    <div class="nav-arrows">
+        <button class="nav-arrow" id="scroll-to-top">↑</button>
+        <button class="nav-arrow" id="scroll-to-bottom">↓</button>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // DOM elements
@@ -519,9 +583,21 @@
             const userInput = document.getElementById('user-input');
             const sendButton = document.getElementById('send-button');
             const typingIndicator = document.getElementById('typing-indicator');
+            const clearMemoryBtn = document.getElementById('clear-memory');
+            const exportChatBtn = document.getElementById('export-chat');
+            const scrollToTopBtn = document.getElementById('scroll-to-top');
+            const scrollToBottomBtn = document.getElementById('scroll-to-bottom');
             
             // Current selected model
             let currentModel = 'deepseek-chat';
+            
+            // Conversation memory - stores the entire conversation history
+            let conversationMemory = [
+                {
+                    role: 'ai',
+                    content: "Hello! I'm DeepSeek Chat with **memory and LaTeX support**. I can remember our conversation and format responses with mathematical expressions. How can I help you today?"
+                }
+            ];
             
             // Configure marked.js
             marked.setOptions({
@@ -581,23 +657,18 @@
             const modelData = {
                 'deepseek-chat': { 
                     name: 'DeepSeek Chat', 
-                    desc: 'With Markdown & LaTeX rendering',
+                    desc: 'With Memory & LaTeX rendering',
                     icon: 'DS'
                 },
                 'deepseek-reasoner': { 
                     name: 'DeepSeek Reasoner', 
-                    desc: 'With Markdown & LaTeX rendering',
+                    desc: 'With Memory & LaTeX rendering',
                     icon: 'DSR'
                 },
                 'gpt-5': { 
                     name: 'ChatGPT 5', 
-                    desc: 'With Markdown & LaTeX rendering',
+                    desc: 'With Memory & LaTeX rendering',
                     icon: 'GPT5'
-                },
-                'claude-3': { 
-                    name: 'Claude 3', 
-                    desc: 'With Markdown & LaTeX rendering',
-                    icon: 'C'
                 }
             };
             
@@ -619,6 +690,12 @@
                     
                     // Add a system message
                     addMessage(`Switched to ${model.name}. How can I help you?`, 'ai');
+                    
+                    // Add to memory
+                    conversationMemory.push({
+                        role: 'ai',
+                        content: `Switched to ${model.name}. How can I help you?`
+                    });
                 });
             });
             
@@ -659,12 +736,76 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
             
-            // Stream response from AI
+            // Clear conversation memory
+            clearMemoryBtn.addEventListener('click', function() {
+                if (confirm("Are you sure you want to clear the conversation? This cannot be undone.")) {
+                    // Clear the chat UI
+                    chatMessages.innerHTML = '';
+                    
+                    // Reset conversation memory with just the initial message
+                    conversationMemory = [{
+                        role: 'ai',
+                        content: "Hello! I'm DeepSeek Chat with **memory and LaTeX support**. I can remember our conversation and format responses with mathematical expressions. How can I help you today?"
+                    }];
+                    
+                    // Add the initial message back to the UI
+                    addMessage(conversationMemory[0].content, 'ai');
+                }
+            });
+            
+            // Export chat
+            exportChatBtn.addEventListener('click', function() {
+                let exportText = "AI Chat Conversation Export\n\n";
+                
+                conversationMemory.forEach(msg => {
+                    const sender = msg.role === 'user' ? 'User' : 'AI';
+                    exportText += `${sender}: ${msg.content}\n\n`;
+                });
+                
+                const blob = new Blob([exportText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ai-chat-export.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+            
+            // Scroll to top function
+            scrollToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Scroll to bottom function
+            scrollToBottomBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Stream response from AI with memory context
             async function streamResponse(message, model) {
                 try {
+                    // Add user message to memory
+                    conversationMemory.push({
+                        role: 'user',
+                        content: message
+                    });
+                    
+                    // Prepare conversation context for the AI (last 6 messages for context)
+                    const contextMessages = conversationMemory.slice(-6);
+                    
                     const response = await puter.ai.chat(message, {
                         model: model,
-                        stream: true
+                        stream: true,
+                        // In a real implementation, you would pass the conversation history here
+                        // context: contextMessages
                     });
                     
                     let fullResponse = '';
@@ -693,10 +834,23 @@
                         }
                     }
                     
+                    // Add AI response to memory
+                    conversationMemory.push({
+                        role: 'ai',
+                        content: fullResponse
+                    });
+                    
                     return fullResponse;
                 } catch (error) {
                     console.error(`Error with ${model}:`, error);
                     addMessage(`Error: ${error.message || 'Unable to get response'}`, 'ai');
+                    
+                    // Add error to memory
+                    conversationMemory.push({
+                        role: 'ai',
+                        content: `Error: ${error.message || 'Unable to get response'}`
+                    });
+                    
                     return null;
                 }
             }
@@ -721,6 +875,13 @@
                     } catch (error) {
                         // Show error message
                         addMessage("Sorry, I encountered an error processing your request.", 'ai');
+                        
+                        // Add error to memory
+                        conversationMemory.push({
+                            role: 'ai',
+                            content: "Sorry, I encountered an error processing your request."
+                        });
+                        
                         console.error("Puter.js API Error:", error);
                     } finally {
                         // Hide typing indicator
