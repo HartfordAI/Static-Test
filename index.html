@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-AI Chat Interface</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            color: #a0a0d0;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .ai-selector {
+            flex: 1;
+            min-width: 250px;
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ai-option {
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(50, 50, 80, 0.6);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .ai-option:hover {
+            background: rgba(70, 70, 100, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        .ai-option.active {
+            border-color: #8f94fb;
+            background: rgba(70, 70, 120, 0.8);
+        }
+        
+        .ai-option h3 {
+            color: #8f94fb;
+            margin-bottom: 5px;
+        }
+        
+        .ai-option p {
+            color: #b0b0d0;
+            font-size: 0.9rem;
+        }
+        
+        .chat-container {
+            flex: 3;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chat-header {
+            padding: 15px 20px;
+            background: rgba(40, 40, 70, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .model-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: rgba(60, 60, 90, 0.8);
+            color: #f0f0f0;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background: rgba(40, 40, 70, 0.8);
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(20, 20, 40, 0.8);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        input:focus {
+            outline: 2px solid #8f94fb;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(143, 148, 251, 0.5);
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+            color: #a0a0d0;
+            font-style: italic;
+        }
+        
+        .typing-indicator.active {
+            display: block;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #a0a0d0;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Multi-AI Chat Interface</h1>
+            <p class="subtitle">Chat with different AI models powered by Puter.js</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="ai-selector">
+                <h2>Select AI Model</h2>
+                <div class="ai-option active" data-model="deepseek-v3.1">
+                    <h3>Deepseek v3.1</h3>
+                    <p>Advanced model specialized in coding and complex reasoning</p>
+                </div>
+                <div class="ai-option" data-model="chatgpt-5">
+                    <h3>ChatGPT 5</h3>
+                    <p>OpenAI's most advanced model with broad knowledge</p>
+                </div>
+                <div class="ai-option" data-model="claude-3">
+                    <h3>Claude 3</h3>
+                    <p>Anthropic's model focused on helpful and honest dialogue</p>
+                </div>
+                <div class="ai-option" data-model="llama-3">
+                    <h3>Llama 3</h3>
+                    <p>Meta's open-source model with strong performance</p>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="model-icon">AI</div>
+                    <h3>Deepseek v3.1</h3>
+                </div>
+                
+                <div class="chat-messages">
+                    <div class="message ai-message">
+                        Hello! I'm Deepseek v3.1. How can I assist you today?
+                    </div>
+                </div>
+                
+                <div class="typing-indicator" id="typing-indicator">
+                    AI is typing...
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+                    <button id="send-button">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Powered by Puter.js | This is a demonstration interface</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const aiOptions = document.querySelectorAll('.ai-option');
+            const chatHeader = document.querySelector('.chat-header h3');
+            const chatMessages = document.querySelector('.chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const typingIndicator = document.getElementById('typing-indicator');
+            
+            // Current selected model
+            let currentModel = 'deepseek-v3.1';
+            
+            // Initialize Puter.js
+            // Note: This is a mock implementation as actual API integration would require proper authentication
+            const puter = {
+                ai: {
+                    chat: async (model, message) => {
+                        // Simulate API call delay
+                        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                        
+                        // Mock responses based on model
+                        const responses = {
+                            'deepseek-v3.1': [
+                                "As Deepseek v3.1, I'm designed to assist with complex problem solving, especially in coding and technical domains.",
+                                "I can help analyze code, suggest optimizations, and explain complex algorithms in detail.",
+                                "My training data includes a wide range of technical literature and programming resources."
+                            ],
+                            'chatgpt-5': [
+                                "As ChatGPT-5, I can help with a wide variety of topics from creative writing to technical explanations.",
+                                "I'm designed to be helpful, harmless, and honest in all my interactions.",
+                                "My knowledge spans numerous domains up until my training cutoff date."
+                            ],
+                            'claude-3': [
+                                "As Claude 3, I strive to be helpful, honest, and harmless in our conversation.",
+                                "I can assist with analysis, writing, math, and more while being transparent about my capabilities.",
+                                "I'm designed to avoid harmful outputs and to be straightforward about what I can and cannot do."
+                            ],
+                            'llama-3': [
+                                "As Llama 3, I'm an open-source model that can help with various tasks including coding and general knowledge.",
+                                "I aim to provide helpful and accurate responses to your queries.",
+                                "Being open-source means my architecture and weights are available to the research community."
+                            ]
+                        };
+                        
+                        // Return a random response for the selected model
+                        const modelResponses = responses[model] || ["I'm not sure how to respond to that."];
+                        return modelResponses[Math.floor(Math.random() * modelResponses.length)];
+                    }
+                }
+            };
+            
+            // Switch AI model
+            aiOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Update active class
+                    aiOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update current model
+                    currentModel = this.getAttribute('data-model');
+                    
+                    // Update chat header
+                    chatHeader.textContent = this.querySelector('h3').textContent;
+                    
+                    // Add a system message
+                    addMessage(`Switched to ${this.querySelector('h3').textContent}. How can I help you?`, 'ai');
+                });
+            });
+            
+            // Add message to chat
+            function addMessage(text, sender) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+                messageElement.textContent = text;
+                
+                chatMessages.appendChild(messageElement);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Send message
+            function sendMessage() {
+                const message = userInput.value.trim();
+                
+                if (message) {
+                    // Add user message
+                    addMessage(message, 'user');
+                    
+                    // Clear input
+                    userInput.value = '';
+                    
+                    // Show typing indicator
+                    typingIndicator.classList.add('active');
+                    
+                    // Get AI response
+                    puter.ai.chat(currentModel, message)
+                        .then(response => {
+                            // Hide typing indicator
+                            typingIndicator.classList.remove('active');
+                            
+                            // Add AI response
+                            addMessage(response, 'ai');
+                        })
+                        .catch(error => {
+                            // Hide typing indicator
+                            typingIndicator.classList.remove('active');
+                            
+                            // Show error message
+                            addMessage("Sorry, I encountered an error processing your request.", 'ai');
+                            console.error("Error:", error);
+                        });
+                }
+            }
+            
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
