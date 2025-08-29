@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hartford AI Unblocked</title>
+    <title>AI Chat with LaTeX Support</title>
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- KaTeX for LaTeX support -->
@@ -24,6 +24,8 @@
             --success: #22c55e;
             --warning: #f59e0b;
             --error: #ef4444;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --card-border: rgba(255, 255, 255, 0.1);
         }
         
         * {
@@ -41,7 +43,7 @@
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -68,27 +70,32 @@
             margin-bottom: 20px;
         }
         
-        .main-content {
-            display: flex;
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
-            flex-wrap: wrap;
         }
         
-        .ai-selector {
-            flex: 1;
-            min-width: 250px;
-            background: rgba(30, 41, 59, 0.7);
+        .card {
+            background: var(--card-bg);
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            max-height: 600px;
+            border: 1px solid var(--card-border);
         }
         
-        .ai-selector h2 {
+        .card h2 {
             margin-bottom: 15px;
             color: var(--primary-light);
             border-bottom: 1px solid var(--gray);
             padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 i {
+            font-size: 1.3rem;
         }
         
         .model-category {
@@ -109,6 +116,9 @@
             cursor: pointer;
             transition: all 0.3s ease;
             border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .ai-option:hover {
@@ -131,15 +141,35 @@
             font-size: 0.85rem;
         }
         
+        .example-prompts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .example-prompt {
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid var(--secondary-light);
+        }
+        
+        .example-prompt:hover {
+            background: rgba(51, 65, 85, 0.8);
+            transform: translateY(-2px);
+        }
+        
         .chat-container {
-            flex: 3;
-            min-width: 300px;
+            grid-column: 1 / -1;
             display: flex;
             flex-direction: column;
-            background: rgba(30, 41, 59, 0.7);
+            background: var(--card-bg);
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
         }
         
         .chat-header {
@@ -248,10 +278,17 @@
             overflow-x: auto;
             overflow-y: hidden;
             padding: 10px 0;
+            margin: 10px 0;
         }
         
         .katex {
             font-size: 1.1em;
+        }
+        
+        .latex-note {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 5px;
         }
         
         .chat-input {
@@ -308,26 +345,6 @@
             color: var(--gray);
         }
         
-        .example-prompts {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .example-prompt {
-            padding: 8px 12px;
-            background: rgba(30, 41, 59, 0.6);
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-        
-        .example-prompt:hover {
-            background: rgba(51, 65, 85, 0.8);
-        }
-        
         footer {
             text-align: center;
             padding: 20px;
@@ -335,62 +352,117 @@
             font-size: 0.9rem;
         }
         
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
+        @media (max-width: 968px) {
+            .dashboard {
+                grid-template-columns: 1fr;
             }
             
+            .example-prompts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
             .message {
                 max-width: 90%;
             }
-            
-            .ai-selector {
-                max-height: 300px;
-            }
+        }
+        
+        .support-badge {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--secondary), var(--secondary-light));
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-left: 10px;
+            vertical-align: middle;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>AI Chat with Markdown & LaTeX Support</h1>
-            <p class="subtitle">Responses with proper formatting for bold, italics, code, and mathematical equations</p>
+            <h1>AI Chat with LaTeX Support</h1>
+            <p class="subtitle">Advanced mathematical expressions with full Markdown formatting</p>
         </header>
         
-        <div class="main-content">
-            <div class="ai-selector">
-                <h2>Select AI Model</h2>
+        <div class="dashboard">
+            <div class="card">
+                <h2><i>🤖</i> Select AI Model <span class="support-badge">Updated</span></h2>
                 
                 <div class="model-category">
                     <h3>DeepSeek Models</h3>
                     <div class="ai-option active" data-model="deepseek-chat">
-                        <h4>DeepSeek Chat</h4>
-                        <p>General purpose conversational AI</p>
+                        <div class="model-icon">DS</div>
+                        <div>
+                            <h4>DeepSeek Chat</h4>
+                            <p>General purpose conversational AI</p>
+                        </div>
                     </div>
                     <div class="ai-option" data-model="deepseek-reasoner">
-                        <h4>DeepSeek Reasoner</h4>
-                        <p>Advanced reasoning capabilities</p>
+                        <div class="model-icon">DS</div>
+                        <div>
+                            <h4>DeepSeek Reasoner</h4>
+                            <p>Advanced reasoning capabilities</p>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="model-category">
                     <h3>OpenAI Models</h3>
                     <div class="ai-option" data-model="gpt-5">
-                        <h4>ChatGPT 5</h4>
-                        <p>OpenAI's most advanced model</p>
+                        <div class="model-icon">GPT</div>
+                        <div>
+                            <h4>ChatGPT 5</h4>
+                            <p>OpenAI's most advanced model</p>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="model-category">
-                    <h3>Example Prompts</h3>
-                    <div class="example-prompts">
-                        <div class="example-prompt" data-prompt="Explain **quantum computing** in simple terms with code examples">Quantum computing</div>
-                        <div class="example-prompt" data-prompt="How does *photosynthesis* work? Explain the **key steps**.">Photosynthesis</div>
-                        <div class="example-prompt" data-prompt="Write a Python function to calculate Fibonacci sequence with explanation">Fibonacci code</div>
-                        <div class="example-prompt" data-prompt="Explain the quadratic formula: $$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$">Quadratic formula</div>
-                        <div class="example-prompt" data-prompt="What is Euler's identity? Explain why $e^{i\\pi} + 1 = 0$ is significant.">Euler's identity</div>
+                    <h3>Anthropic Models</h3>
+                    <div class="ai-option" data-model="claude-3">
+                        <div class="model-icon">C</div>
+                        <div>
+                            <h4>Claude 3</h4>
+                            <p>Anthropic's latest model</p>
+                        </div>
                     </div>
                 </div>
+            </div>
+            
+            <div class="card">
+                <h2><i>💡</i> Example Prompts <span class="support-badge">LaTeX Enabled</span></h2>
+                
+                <div class="example-prompts-grid">
+                    <div class="example-prompt" data-prompt="Explain the quadratic formula: $$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$">
+                        Quadratic Formula
+                    </div>
+                    <div class="example-prompt" data-prompt="What is Euler's identity? Explain why $e^{i\pi} + 1 = 0$ is significant.">
+                        Euler's Identity
+                    </div>
+                    <div class="example-prompt" data-prompt="Explain the Pythagorean theorem: $a^2 + b^2 = c^2$ with a diagram.">
+                        Pythagorean Theorem
+                    </div>
+                    <div class="example-prompt" data-prompt="Describe the normal distribution: $$f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2}$$">
+                        Normal Distribution
+                    </div>
+                    <div class="example-prompt" data-prompt="Explain **quantum computing** in simple terms with code examples">
+                        Quantum Computing
+                    </div>
+                    <div class="example-prompt" data-prompt="How does *photosynthesis* work? Explain the **key steps**.">
+                        Photosynthesis
+                    </div>
+                    <div class="example-prompt" data-prompt="Write a Python function to calculate Fibonacci sequence with explanation">
+                        Fibonacci Code
+                    </div>
+                    <div class="example-prompt" data-prompt="Explain the law of universal gravitation: $$F = G \frac{m_1 m_2}{r^2}$$">
+                        Universal Gravitation
+                    </div>
+                </div>
+                
+                <p class="latex-note">All examples support LaTeX mathematical expressions using $...$ for inline and $$...$$ for display equations.</p>
             </div>
             
             <div class="chat-container">
@@ -431,7 +503,7 @@
         </div>
         
         <footer>
-            <p>Powered by Puter.js | Built For Hartford Schools District</p>
+            <p>Powered by Puter.js | Built For Hartford Schools District | LaTeX Support via KaTeX</p>
         </footer>
     </div>
 
@@ -521,6 +593,11 @@
                     name: 'ChatGPT 5', 
                     desc: 'With Markdown & LaTeX rendering',
                     icon: 'GPT5'
+                },
+                'claude-3': { 
+                    name: 'Claude 3', 
+                    desc: 'With Markdown & LaTeX rendering',
+                    icon: 'C'
                 }
             };
             
