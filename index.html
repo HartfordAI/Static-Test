@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hartford AI - DeepSeek & ChatGPT 5</title>
+    <title>AI Chat with Markdown Support</title>
     <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -36,7 +37,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -187,6 +188,57 @@
             border-bottom-left-radius: 5px;
         }
         
+        .ai-message-content {
+            line-height: 1.6;
+        }
+        
+        .ai-message-content h1, 
+        .ai-message-content h2, 
+        .ai-message-content h3 {
+            margin: 15px 0 10px 0;
+            color: var(--primary-light);
+        }
+        
+        .ai-message-content p {
+            margin-bottom: 10px;
+        }
+        
+        .ai-message-content ul, 
+        .ai-message-content ol {
+            margin: 10px 0 10px 20px;
+        }
+        
+        .ai-message-content li {
+            margin-bottom: 5px;
+        }
+        
+        .ai-message-content code {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .ai-message-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+        
+        .ai-message-content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .ai-message-content blockquote {
+            border-left: 4px solid var(--primary-light);
+            padding-left: 15px;
+            margin: 15px 0;
+            color: var(--gray);
+        }
+        
         .chat-input {
             display: flex;
             padding: 15px;
@@ -286,8 +338,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>AI Chat Hub</h1>
-            <p class="subtitle">Chat with DeepSeek and ChatGPT 5 models</p>
+            <h1>AI Chat with Markdown Support</h1>
+            <p class="subtitle">Responses with proper formatting for bold, italics, code, and more</p>
         </header>
         
         <div class="main-content">
@@ -317,10 +369,9 @@
                 <div class="model-category">
                     <h3>Example Prompts</h3>
                     <div class="example-prompts">
-                        <div class="example-prompt" data-prompt="Explain quantum computing in simple terms">Quantum computing</div>
-                        <div class="example-prompt" data-prompt="How does photosynthesis work?">Photosynthesis</div>
-                        <div class="example-prompt" data-prompt="What are the benefits of renewable energy?">Renewable energy</div>
-                        <div class="example-prompt" data-prompt="Explain the theory of relativity">Theory of relativity</div>
+                        <div class="example-prompt" data-prompt="Explain **quantum computing** in simple terms with code examples">Quantum computing</div>
+                        <div class="example-prompt" data-prompt="How does *photosynthesis* work? Explain the **key steps**.">Photosynthesis</div>
+                        <div class="example-prompt" data-prompt="Write a Python function to calculate Fibonacci sequence with explanation">Fibonacci code</div>
                     </div>
                 </div>
             </div>
@@ -329,12 +380,22 @@
                 <div class="chat-header">
                     <div class="model-icon">DS</div>
                     <h3>DeepSeek Chat</h3>
-                    <div class="model-info">General purpose conversational AI</div>
+                    <div class="model-info">With Markdown rendering</div>
                 </div>
                 
                 <div class="chat-messages" id="chat-messages">
                     <div class="message ai-message">
-                        Hello! I'm DeepSeek Chat. How can I assist you today?
+                        <div class="ai-message-content">
+                            Hello! I'm DeepSeek Chat with **Markdown support**. I can format my responses with:
+                            <ul>
+                                <li>*Italics* and **bold** text</li>
+                                <li>`Code snippets` and ```code blocks```</li>
+                                <li># Headers and ## Subheaders</li>
+                                <li>- Lists and 1. Numbered lists</li>
+                                <li>> Blockquotes</li>
+                            </ul>
+                            How can I help you today?
+                        </div>
                     </div>
                 </div>
                 
@@ -350,7 +411,7 @@
         </div>
         
         <footer>
-            <p>For Hartford School District | Featuring DeepSeek and ChatGPT 5 models</p>
+            <p>Powered by Puter.js | Markdown rendering with Marked.js</p>
         </footer>
     </div>
 
@@ -370,21 +431,31 @@
             // Current selected model
             let currentModel = 'deepseek-chat';
             
+            // Configure marked.js
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                highlight: function(code, lang) {
+                    // In a real implementation, you might use a syntax highlighter here
+                    return code;
+                }
+            });
+            
             // Model descriptions and icons
             const modelData = {
                 'deepseek-chat': { 
                     name: 'DeepSeek Chat', 
-                    desc: 'General purpose conversational AI',
+                    desc: 'With Markdown rendering',
                     icon: 'DS'
                 },
                 'deepseek-reasoner': { 
                     name: 'DeepSeek Reasoner', 
-                    desc: 'Advanced reasoning capabilities',
+                    desc: 'With Markdown rendering',
                     icon: 'DSR'
                 },
                 'gpt-5': { 
                     name: 'ChatGPT 5', 
-                    desc: 'OpenAI\'s most advanced model',
+                    desc: 'With Markdown rendering',
                     icon: 'GPT5'
                 }
             };
@@ -424,7 +495,16 @@
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message');
                 messageElement.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
-                messageElement.textContent = text;
+                
+                if (sender === 'user') {
+                    messageElement.textContent = text;
+                } else {
+                    // Render markdown for AI messages
+                    const contentDiv = document.createElement('div');
+                    contentDiv.classList.add('ai-message-content');
+                    contentDiv.innerHTML = marked.parse(text);
+                    messageElement.appendChild(contentDiv);
+                }
                 
                 chatMessages.appendChild(messageElement);
                 
@@ -443,12 +523,17 @@
                     let fullResponse = '';
                     const messageElement = document.createElement('div');
                     messageElement.classList.add('message', 'ai-message');
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.classList.add('ai-message-content');
+                    messageElement.appendChild(contentDiv);
+                    
                     chatMessages.appendChild(messageElement);
                     
                     for await (const part of response) {
                         if (part?.text) {
                             fullResponse += part.text;
-                            messageElement.textContent = fullResponse;
+                            contentDiv.innerHTML = marked.parse(fullResponse);
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }
                     }
