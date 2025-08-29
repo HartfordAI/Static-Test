@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepSeek AI Chat Hub</title>
+    <title>Hartford AI - DeepSeek & ChatGPT 5</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
         :root {
@@ -153,6 +153,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
         }
         
         .chat-messages {
@@ -240,40 +241,24 @@
             color: var(--gray);
         }
         
-        .compare-section {
-            background: rgba(30, 41, 59, 0.7);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .compare-section h2 {
-            color: var(--primary-light);
-            margin-bottom: 15px;
-        }
-        
-        .compare-container {
+        .example-prompts {
             display: flex;
-            gap: 20px;
             flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
         }
         
-        .compare-box {
-            flex: 1;
-            min-width: 300px;
-            background: rgba(51, 65, 85, 0.6);
-            border-radius: 10px;
-            padding: 15px;
-            max-height: 300px;
-            overflow-y: auto;
+        .example-prompt {
+            padding: 8px 12px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
         
-        .compare-box h3 {
-            color: var(--primary-light);
-            margin-bottom: 10px;
-            border-bottom: 1px solid var(--gray);
-            padding-bottom: 5px;
+        .example-prompt:hover {
+            background: rgba(51, 65, 85, 0.8);
         }
         
         footer {
@@ -295,18 +280,14 @@
             .ai-selector {
                 max-height: 300px;
             }
-            
-            .compare-container {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>DeepSeek AI Chat Hub</h1>
-            <p class="subtitle">Experience the power of DeepSeek Chat and Reasoner models</p>
+            <h1>AI Chat Hub</h1>
+            <p class="subtitle">Chat with DeepSeek and ChatGPT 5 models</p>
         </header>
         
         <div class="main-content">
@@ -326,15 +307,20 @@
                 </div>
                 
                 <div class="model-category">
+                    <h3>OpenAI Models</h3>
+                    <div class="ai-option" data-model="gpt-5">
+                        <h4>ChatGPT 5</h4>
+                        <p>OpenAI's most advanced model</p>
+                    </div>
+                </div>
+                
+                <div class="model-category">
                     <h3>Example Prompts</h3>
-                    <div class="example-prompt" data-prompt="Explain quantum computing in simple terms">
-                        <p>Explain quantum computing</p>
-                    </div>
-                    <div class="example-prompt" data-prompt="What are the environmental impacts of renewable energy?">
-                        <p>Environmental impacts of renewable energy</p>
-                    </div>
-                    <div class="example-prompt" data-prompt="How does the human immune system work?">
-                        <p>How the immune system works</p>
+                    <div class="example-prompts">
+                        <div class="example-prompt" data-prompt="Explain quantum computing in simple terms">Quantum computing</div>
+                        <div class="example-prompt" data-prompt="How does photosynthesis work?">Photosynthesis</div>
+                        <div class="example-prompt" data-prompt="What are the benefits of renewable energy?">Renewable energy</div>
+                        <div class="example-prompt" data-prompt="Explain the theory of relativity">Theory of relativity</div>
                     </div>
                 </div>
             </div>
@@ -353,7 +339,7 @@
                 </div>
                 
                 <div class="typing-indicator" id="typing-indicator">
-                    DeepSeek is thinking...
+                    AI is thinking...
                 </div>
                 
                 <div class="chat-input">
@@ -363,23 +349,8 @@
             </div>
         </div>
         
-        <div class="compare-section">
-            <h2>Compare Responses</h2>
-            <div class="compare-container">
-                <div class="compare-box">
-                    <h3>DeepSeek Chat</h3>
-                    <div id="chat-response"></div>
-                </div>
-                <div class="compare-box">
-                    <h3>DeepSeek Reasoner</h3>
-                    <div id="reasoner-response"></div>
-                </div>
-            </div>
-            <button id="compare-button" style="margin-top: 15px;">Compare Responses for Current Question</button>
-        </div>
-        
         <footer>
-            <p>Powered by Puter.js | Featuring DeepSeek AI models</p>
+            <p>Powered by Puter.js | Featuring DeepSeek and ChatGPT 5 models</p>
         </footer>
     </div>
 
@@ -389,23 +360,33 @@
             const aiOptions = document.querySelectorAll('.ai-option');
             const examplePrompts = document.querySelectorAll('.example-prompt');
             const chatHeader = document.querySelector('.chat-header h3');
+            const modelIcon = document.querySelector('.model-icon');
             const modelInfo = document.querySelector('.model-info');
             const chatMessages = document.getElementById('chat-messages');
             const userInput = document.getElementById('user-input');
             const sendButton = document.getElementById('send-button');
             const typingIndicator = document.getElementById('typing-indicator');
-            const compareButton = document.getElementById('compare-button');
-            const chatResponseBox = document.getElementById('chat-response');
-            const reasonerResponseBox = document.getElementById('reasoner-response');
             
             // Current selected model
             let currentModel = 'deepseek-chat';
-            let currentQuestion = '';
             
-            // Model descriptions
-            const modelDescriptions = {
-                'deepseek-chat': 'General purpose conversational AI',
-                'deepseek-reasoner': 'Advanced reasoning capabilities'
+            // Model descriptions and icons
+            const modelData = {
+                'deepseek-chat': { 
+                    name: 'DeepSeek Chat', 
+                    desc: 'General purpose conversational AI',
+                    icon: 'DS'
+                },
+                'deepseek-reasoner': { 
+                    name: 'DeepSeek Reasoner', 
+                    desc: 'Advanced reasoning capabilities',
+                    icon: 'DSR'
+                },
+                'gpt-5': { 
+                    name: 'ChatGPT 5', 
+                    desc: 'OpenAI\'s most advanced model',
+                    icon: 'GPT5'
+                }
             };
             
             // Switch AI model
@@ -418,14 +399,14 @@
                     // Update current model
                     currentModel = this.getAttribute('data-model');
                     
-                    // Update chat header
-                    chatHeader.textContent = this.querySelector('h4').textContent;
-                    
-                    // Update model info
-                    modelInfo.textContent = modelDescriptions[currentModel];
+                    // Update UI
+                    const model = modelData[currentModel];
+                    chatHeader.textContent = model.name;
+                    modelInfo.textContent = model.desc;
+                    modelIcon.textContent = model.icon;
                     
                     // Add a system message
-                    addMessage(`Switched to ${this.querySelector('h4').textContent}. How can I help you?`, 'ai');
+                    addMessage(`Switched to ${model.name}. How can I help you?`, 'ai');
                 });
             });
             
@@ -434,6 +415,7 @@
                 prompt.addEventListener('click', function() {
                     const promptText = this.getAttribute('data-prompt');
                     userInput.value = promptText;
+                    userInput.focus();
                 });
             });
             
@@ -451,7 +433,7 @@
             }
             
             // Stream response from AI
-            async function streamResponse(message, model, outputElement = null) {
+            async function streamResponse(message, model) {
                 try {
                     const response = await puter.ai.chat(message, {
                         model: model,
@@ -459,23 +441,22 @@
                     });
                     
                     let fullResponse = '';
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', 'ai-message');
+                    chatMessages.appendChild(messageElement);
                     
                     for await (const part of response) {
                         if (part?.text) {
                             fullResponse += part.text;
-                            if (outputElement) {
-                                outputElement.textContent = fullResponse;
-                                outputElement.scrollTop = outputElement.scrollHeight;
-                            }
+                            messageElement.textContent = fullResponse;
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
                         }
                     }
                     
                     return fullResponse;
                 } catch (error) {
                     console.error(`Error with ${model}:`, error);
-                    if (outputElement) {
-                        outputElement.textContent = `Error: ${error.message || 'Unable to get response'}`;
-                    }
+                    addMessage(`Error: ${error.message || 'Unable to get response'}`, 'ai');
                     return null;
                 }
             }
@@ -485,9 +466,6 @@
                 const message = userInput.value.trim();
                 
                 if (message) {
-                    // Store current question for comparison
-                    currentQuestion = message;
-                    
                     // Add user message
                     addMessage(message, 'user');
                     
@@ -499,49 +477,20 @@
                     
                     // Get AI response
                     try {
-                        const response = await streamResponse(message, currentModel);
-                        
-                        // Hide typing indicator
-                        typingIndicator.classList.remove('active');
-                        
-                        // Add AI response
-                        if (response) {
-                            addMessage(response, 'ai');
-                        } else {
-                            addMessage("Sorry, I couldn't process your request. Please try again.", 'ai');
-                        }
+                        await streamResponse(message, currentModel);
                     } catch (error) {
-                        // Hide typing indicator
-                        typingIndicator.classList.remove('active');
-                        
                         // Show error message
                         addMessage("Sorry, I encountered an error processing your request.", 'ai');
                         console.error("Puter.js API Error:", error);
+                    } finally {
+                        // Hide typing indicator
+                        typingIndicator.classList.remove('active');
                     }
                 }
             }
             
-            // Compare responses
-            async function compareResponses() {
-                if (!currentQuestion) {
-                    alert("Please ask a question first using the chat.");
-                    return;
-                }
-                
-                // Clear previous responses
-                chatResponseBox.textContent = '';
-                reasonerResponseBox.textContent = '';
-                
-                // Get responses from both models
-                await Promise.all([
-                    streamResponse(currentQuestion, 'deepseek-chat', chatResponseBox),
-                    streamResponse(currentQuestion, 'deepseek-reasoner', reasonerResponseBox)
-                ]);
-            }
-            
             // Event listeners
             sendButton.addEventListener('click', sendMessage);
-            compareButton.addEventListener('click', compareResponses);
             
             userInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
